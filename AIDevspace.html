@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 开发者空间用户操作指南</title>
+<style>
+  :root {
+    --link: #4191fa;
+    --title: #191919;
+    --text: #595959;
+    --text-2: #6b6b6b;
+    --text-3: #999999;
+    --border: #e5e5e5;
+    --bg: #f5f5f6;
+    --card: #ffffff;
+    --bg-soft: #f7f8fa;
+    --code-bg: #f6f6f6;
+    --code-text: #333333;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+      "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 50px;
+    padding: 0 24px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar .logo {
+    height: 26px;
+    width: auto;
+    display: block;
+    flex-shrink: 0;
+  }
+  .topbar .title { font-weight: 700; font-size: 16px; color: var(--title); }
+  .topbar .subtitle { color: var(--text-3); font-size: 13px; }
+  .menu-toggle {
+    display: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+    color: var(--title);
+    border-radius: 4px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .menu-toggle:hover { background: var(--bg-soft); }
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 20;
+  }
+  .search-box {
+    position: relative;
+    margin-left: auto;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .search-box input {
+    width: 220px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    font-size: 13px;
+    color: var(--title);
+    background: var(--bg-soft);
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .search-box input:focus { border-color: var(--link); background: #fff; }
+  .search-results {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    width: 320px;
+    max-height: 360px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    display: none;
+    z-index: 40;
+  }
+  .search-results.show { display: block; }
+  .search-results .sr-item {
+    display: block;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--bg-soft);
+    cursor: pointer;
+  }
+  .search-results .sr-item:last-child { border-bottom: none; }
+  .search-results .sr-item:hover { background: var(--bg-soft); }
+  .search-results .sr-title {
+    display: block;
+    font-weight: 600;
+    color: var(--title);
+    font-size: 13.5px;
+  }
+  .search-results .sr-snippet {
+    display: block;
+    font-size: 12.5px;
+    color: var(--text-3);
+    margin-top: 2px;
+  }
+  .search-empty {
+    padding: 16px;
+    text-align: center;
+    color: var(--text-3);
+    font-size: 13px;
+  }
+
+  .container {
+    display: flex;
+    max-width: 1280px;
+    margin: 24px auto;
+    background: var(--card);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 74px;
+    align-self: flex-start;
+    width: 264px;
+    min-width: 0;
+    flex-shrink: 0;
+    height: calc(100vh - 98px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 24px 16px 40px 24px;
+    border-right: 1px solid var(--border);
+    border-radius: 8px 0 0 8px;
+    background: var(--card);
+    transition: width 0.2s ease, padding 0.2s ease, opacity 0.2s ease;
+    white-space: nowrap;
+  }
+  .sidebar .toc-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--title);
+    margin-bottom: 12px;
+    padding: 0 10px;
+  }
+  .sidebar nav a {
+    display: block;
+    padding: 6px 10px;
+    margin: 1px 0;
+    font-size: 13.5px;
+    color: var(--text);
+    border-radius: 4px;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .sidebar nav a:hover { background: var(--bg-soft); color: var(--title); text-decoration: none; }
+  .sidebar nav a.active {
+    color: var(--link);
+    background: rgba(65, 145, 250, 0.08);
+    border-left-color: var(--link);
+    font-weight: 600;
+  }
+  .sidebar nav a.sub { padding-left: 26px; font-size: 13px; color: var(--text-2); }
+  .sidebar nav a.sub2 { padding-left: 42px; font-size: 12.5px; color: var(--text-3); }
+  .sidebar nav a.toggle-parent {
+    cursor: pointer;
+    user-select: none;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .sidebar nav a.toggle-parent .label { flex: 1; min-width: 0; }
+  .sidebar nav a.toggle-parent .arrow {
+    display: inline-block;
+    width: 14px;
+    font-size: 11px;
+    text-align: right;
+    flex-shrink: 0;
+    margin-left: auto;
+    transition: transform 0.15s ease;
+  }
+  .sidebar nav a.toggle-parent.open .arrow { transform: rotate(90deg); }
+  .sidebar nav .submenu.collapsed { display: none; }
+  .sidebar nav .group {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: 18px 10px 4px;
+  }
+
+  .content {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    padding: 36px 56px 72px;
+    background: var(--card);
+    border-radius: 0 8px 8px 0;
+  }
+  .content > section { display: none; }
+  .content > section.page-active { display: block; }
+  .content h1 { font-size: 30px; line-height: 1.3; margin: 0 0 16px; color: var(--title); letter-spacing: -0.01em; }
+  .content h2 { font-size: 22px; margin: 0 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); color: var(--title); }
+  .content h3 { font-size: 17px; margin: 30px 0 12px; color: var(--title); }
+  .content p { margin: 12px 0; color: var(--text); }
+  .content .lead { font-size: 16px; color: var(--text); }
+  .content strong { color: var(--title); font-weight: 650; }
+
+  .content ul, .content ol { margin: 12px 0; padding-left: 24px; color: var(--text); }
+  .content li { margin: 6px 0; }
+
+  .content table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  .content th, .content td { border: 1px solid var(--border); padding: 10px 14px; text-align: left; vertical-align: top; }
+  .content th { background: var(--bg-soft); font-weight: 650; color: var(--title); }
+  .content tr:nth-child(even) td { background: #fafbfc; }
+
+  .content pre {
+    background: var(--code-bg);
+    border: 1px solid #ececec;
+    color: var(--code-text);
+    padding: 16px 20px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-family: "SFMono-Regular", "JetBrains Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 16px 0;
+  }
+  .content code { font-family: "SFMono-Regular", "JetBrains Mono", Consolas, "Liberation Mono", Menlo, monospace; font-size: 0.9em; }
+  .content :not(pre) > code {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--link);
+  }
+
+  .tip {
+    border-left: 4px solid var(--link);
+    background: rgba(65, 145, 250, 0.06);
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .tip b { color: var(--title); }
+
+  .screenshot {
+    display: block;
+    max-width: 100%;
+    margin: 18px 0 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+  .video-card .video-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    text-align: left;
+    margin: 8px 14px 8px;
+  }
+  .video-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .video-filter {
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .video-filter:hover { border-color: var(--link); color: var(--link); }
+  .video-filter.active {
+    background: var(--link);
+    border-color: var(--link);
+    color: #fff;
+  }
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 12px;
+  }
+  .video-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+    padding: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+  }
+  .video-thumb {
+    position: relative;
+    border-radius: 0;
+    overflow: hidden;
+    cursor: pointer;
+    background: #000;
+  }
+  .video-thumb video,
+  .video-thumb img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+  .video-thumb.video-loaded img {
+    display: none;
+  }
+  .video-duration {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 12px;
+    line-height: 1;
+    padding: 3px 6px;
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  .video-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .video-play:hover {
+    background: rgba(0, 0, 0, 0.75);
+  }
+  .video-play svg {
+    width: 26px;
+    height: 26px;
+    fill: #fff;
+  }
+  .video-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .video-pagination button {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .video-pagination button:hover:not(:disabled):not(.active) {
+    border-color: var(--link);
+    color: var(--link);
+  }
+  .video-pagination button.active {
+    background: var(--link);
+    border-color: var(--link);
+    color: #fff;
+    cursor: default;
+  }
+  .video-pagination button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .video-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .video-modal.show { display: flex; }
+  .video-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+  }
+  .video-modal-box {
+    position: relative;
+    z-index: 1;
+    width: min(800px, 100%);
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+  }
+  .video-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .video-modal-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--title);
+  }
+  .video-modal-close {
+    border: none;
+    background: transparent;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--text-3);
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .video-modal-close:hover { color: var(--title); }
+  .video-modal-box video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+  /* 移动端竖屏全屏：旋转 90° 强制横屏展示视频 */
+  #video-modal-player.force-landscape {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: 100vh;
+    height: 100vw;
+    transform: rotate(90deg);
+    object-fit: contain;
+    background: #000;
+  }
+  /* 移动端卡片内直接播放：隐藏播放图标和时长角标（避免遮挡原生控制条） */
+  .video-thumb.inline-playing .video-play,
+  .video-thumb.inline-playing .video-duration { display: none; }
+  .video-thumb video::-webkit-media-controls-panel {
+    background-image: none !important;
+    background-color: rgba(0, 0, 0, 0.55) !important;
+  }
+  .figcaption {
+    font-size: 13px;
+    color: var(--text-3);
+    text-align: center;
+    margin: 0 0 22px;
+  }
+
+  .steps { counter-reset: step; list-style: none; padding-left: 0; }
+  .steps li { position: relative; padding-left: 36px; margin: 12px 0; counter-increment: step; }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--link);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .chapter-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .chapter-nav a { color: var(--link); }
+  .chapter-nav .prev { text-align: left; }
+  .chapter-nav .next { text-align: right; margin-left: auto; }
+
+  @media (min-width: 1001px) and (max-width: 1280px) {
+    .container { margin: 16px; }
+    .sidebar { width: 224px; padding-left: 16px; padding-right: 12px; }
+    .content { padding: 28px 36px 64px; }
+  }
+
+  @media (max-width: 1000px) {
+    .menu-toggle { display: flex; }
+    .overlay.show { display: block; }
+    .topbar { padding: 0 16px; gap: 8px; }
+    .topbar .title { font-size: 15px; }
+
+    .container { margin: 12px; border-radius: 8px; }
+
+    .sidebar {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 280px;
+      height: 100vh;
+      border-radius: 0;
+      border-right: 1px solid var(--border);
+      padding: 20px 16px 40px 20px;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+      z-index: 25;
+      white-space: normal;
+    }
+    .sidebar.open { transform: translateX(0); }
+
+    .content { padding: 24px 18px 60px; border-radius: 8px; }
+    .content h1 { font-size: 24px; }
+    .content h2 { font-size: 20px; }
+    .content h3 { font-size: 16px; }
+    .chapter-nav { gap: 8px; font-size: 12px; flex-wrap: nowrap; }
+    .chapter-nav .prev, .chapter-nav .next { flex: 1; min-width: 0; text-align: left; margin-left: 0; }
+    .chapter-nav .next { text-align: right; }
+
+    .search-box { flex: 1; max-width: 160px; }
+    .search-box input { width: 100%; }
+    .video-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .search-results {
+      position: fixed;
+      top: 56px;
+      left: 12px;
+      right: 12px;
+      width: auto;
+      max-height: 50vh;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .topbar { height: 48px; padding: 0 12px; }
+    .topbar .logo { height: 22px; }
+    .topbar .title { font-size: 14px; }
+    .search-box { max-width: 120px; }
+    .container { margin: 8px; }
+    .content { padding: 20px 14px 48px; }
+    .content h1 { font-size: 22px; }
+    .content h2 { font-size: 18px; }
+    .video-grid { grid-template-columns: 1fr; gap: 14px; }
+    .video-card .video-title { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="menu-toggle" id="menu-toggle" aria-label="打开菜单">☰</button>
+  <img class="logo" src="images/space.svg" alt="AI 开发者空间" />
+  <span class="title">AI 开发者空间</span>
+  <div class="search-box">
+    <input type="text" id="search-input" placeholder="搜索文档" autocomplete="off" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+</header>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="container">
+  <aside class="sidebar">
+    <div class="toc-title">开始使用</div>
+    <nav id="toc">
+      <a href="#intro">简介</a>
+      <a href="#home">首页</a>
+      <a href="#agents" class="toggle-parent" id="agents-toggle"><span class="label">AGENTS 概览</span><span class="arrow">▸</span></a>
+      <div class="submenu collapsed" id="agents-submenu">
+        <a href="#ai-shell" class="sub2">AI SHELL</a>
+        <a href="#agent-codearts" class="sub2">CodeArts</a>
+        <a href="#agent-WorkSwarm" class="sub2">WorkSwarm</a>
+        <a href="#agent-deepseek-harness" class="sub2">DeepSeek Harness</a>
+        <a href="#agent-hermes" class="sub2">Hermes Agent</a>
+        <a href="#agent-opencode" class="sub2">OpenCode</a>
+        <a href="#agent-openclaw" class="sub2">OpenClaw</a>
+        <a href="#agent-kimicode" class="sub2">KimiCode</a>
+        <a href="#agent-prime" class="sub2">Prime Agent</a>
+        <a href="#agent-eduswarm" class="sub2">EduSwarm</a>
+      </div>
+      
+      <a href="#workenv">环境管理</a>
+      <a href="#agent-work" class="toggle-parent" id="agentwork-toggle"><span class="label">AGENT WORK</span><span class="arrow">▸</span></a>
+      <div class="submenu collapsed" id="agentwork-submenu">
+        <a href="#agent-work-agents" class="sub2">Agent 管理</a>
+        <a href="#agent-work-projects" class="sub2">项目</a>
+        <a href="#agent-work-tasks" class="sub2">任务</a>
+        <a href="#agent-work-squads" class="sub2">小队</a>
+        <a href="#agent-work-automation" class="sub2">自动化</a>
+      </div>
+      <a href="#extensions" class="toggle-parent" id="extensions-toggle"><span class="label">EXTENSIONS</span><span class="arrow">▸</span></a>
+      <div class="submenu collapsed" id="extensions-submenu">
+        <a href="#skills" class="sub2">华为云 Skills</a>
+        <a href="#channels" class="sub2">Channels</a>
+      </div>
+      <a href="#tools" class="toggle-parent" id="tools-toggle"><span class="label">TOOLS</span><span class="arrow">▸</span></a>
+      <div class="submenu collapsed" id="tools-submenu">
+        <a href="#tool-openviking" class="sub2">OpenViking</a>
+        <a href="#tool-devbridge" class="sub2">DevBridge</a>
+      </div>
+      <a href="#resources" class="toggle-parent" id="resources-toggle"><span class="label">RESOURCES</span><span class="arrow">▸</span></a>
+      <div class="submenu collapsed" id="resources-submenu">
+        <a href="#resources-docs" class="sub2">文档站</a>
+        <a href="#resources-agent" class="sub2">Agent 接入</a>
+      </div>
+      <a href="#files">文件管理</a>
+      <a href="#settings">设置与反馈</a>
+      <a href="#system-monitoring">系统监控</a>
+      <a href="#video-tutorials">视频指导</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+
+    <section id="intro">
+      <h2>简介</h2>
+      <p class="lead">AI 开发者空间是面向开发者的智能开发工作空间，以 AI SHELL 为核心入口，通过自然语言交互和命令行两种模式，打通云资源操作、智能代码生成、多 Agent 协作、基础设施即代码（IaC）部署、消息渠道对接、隧道托管与远程连接等全链路开发能力，帮助开发者在统一工作台中高效完成云原生应用的开发、部署与运维。</p>
+
+      <h3>核心能力</h3>
+      <table>
+        <thead>
+          <tr><th>模块</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>AI SHELL</strong></td><td>核心入口，支持 AI 对话、TUI、命令行三种交互模式</td></tr>
+          <tr><td><strong>AGENTS</strong></td><td>9 个智能体，覆盖代码编写与分析、多 Agent 协作、DeepSeek 推理、编程辅助、个人助手、任务调度编排、AI 教学辅助等场景</td></tr>
+          <tr><td><strong>环境管理</strong></td><td>14 个作业环境，支持智能体、开发工具、数据库、基础设施四类分类，一键部署与管理</td></tr>
+          <tr><td><strong>AGENT WORK</strong></td><td>智能体工作平台（Beta），包含 Agent 管理、项目、任务、小队、自动化 5 个子模块，覆盖从 Agent 定义、任务承载、多智能体协作到周期自动化的完整工作流</td></tr>
+          <tr><td><strong>EXTENSIONS</strong></td><td>扩展能力，包含华为云 Skills（79 个云服务技能）和 Channels（飞书/微信/企业微信对接）</td></tr>
+          <tr><td><strong>TOOLS</strong></td><td>开发辅助工具：OpenViking 代码理解与重构、DevBridge 隧道管理</td></tr>
+          <tr><td><strong>RESOURCES</strong></td><td>资源入口：文档站（本操作指南）与 Agent 接入（IACMCPServer 使用指南）</td></tr>
+          <tr><td><strong>文件管理</strong></td><td>工作区文件操作：搜索、批量处理、上传、新建文件/文件夹，右侧面板快速访问</td></tr>
+          <tr><td><strong>设置与反馈</strong></td><td>账号信息与主题设置（浅色 / 深色 / 跟随设备），以及问题反馈入口</td></tr>
+          <tr><td><strong>视频指导</strong></td><td>核心功能与实操方法的视频教程，支持按 CodeArts、AgentWork、WorkSwarm、作业环境、DevBridge、OpenViking 分类筛选查看</td></tr>
+        </tbody>
+      </table>
+
+      <h3>为什么需要 AI 开发者空间</h3>
+      <p>在华为云上进行开发与运维时，开发者常遇到以下挑战：</p>
+      <ul>
+        <li><strong>云资源操作门槛高</strong>：ECS、CCE、OBS 等服务 API 与 CLI 命令繁多，学习成本高</li>
+        <li><strong>自然语言到命令的转换难</strong>：想把想法落地为可执行的云操作命令，需要大量检索与试错</li>
+        <li><strong>代码理解与重构成本高</strong>：大型项目中代码逻辑复杂，缺乏智能化的代码分析与重构建议支持</li>
+        <li><strong>多云 IaC 编排学习曲线陡峭</strong>：多云资源编排需要掌握不同云平台的 IaC 语法，切换成本高</li>
+        <li><strong>隧道与远程连接配置复杂</strong>：本地开发环境与云环境的安全连接配置繁琐，端口管理与转发耗时</li>
+        <li><strong>能力分散</strong>：代码智能体、多 Agent 协作、IaC 部署、隧道管理等工具散落各处，难以协同</li>
+        <li><strong>多平台集成繁琐</strong>：难以将 AI 能力接入飞书、微信、企业微信等消息平台</li>
+      </ul>
+    </section>
+
+    <section id="home">
+      <h2>首页</h2>
+      <p>登录 AI 开发者空间后默认进入首页。页面左侧为全局导航（AGENTS、环境管理、EXTENSIONS、TOOLS、RESOURCES、文件管理、设置与反馈），右侧为资源管理器面板；主区域从上到下分为四个板块：</p>
+      <img class="screenshot" src="images/home.png" alt="AI 开发者空间首页" />
+      <div class="figcaption">AI 开发者空间首页总览</div>
+      <table>
+        <thead>
+          <tr><th>板块</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>快速开始</strong></td><td>产品与核心功能的视频教程列表（什么是 AI 开发者空间、码道 CodeArts、WorkSwarm、AgentWork 等），点击即可在线播放</td></tr>
+          <tr><td><strong>每日AI知识精选</strong></td><td>每日更新的大模型与 AI 领域精选资讯，涵盖前沿模型发布、技术进展与实践案例</td></tr>
+          <tr><td><strong>实践中心</strong></td><td>AI 云原生、鸿蒙、AI 办公、IaC 四大开发实践中心，按场景提供端到端的开发实践资源</td></tr>
+          <tr><td><strong>开发者动态</strong></td><td>华为云开发者活动、任务福利与平台最新动态</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="ai-shell">
+      <h2>AI SHELL</h2>
+      <p><strong>AI SHELL</strong> 是产品的核心入口，秉持“智驱华为云，对话即部署”的产品理念，大模型驱动，支持自然语言对话、智能排错与云端在线终端，提供三种交互模式：</p>
+      <table>
+        <thead>
+          <tr><th>模式</th><th>用途</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>AI 对话</strong></td><td>自然语言交互</td><td>用自然语言描述需求，AI 生成命令并执行（默认模式）</td></tr>
+          <tr><td><strong>TUI</strong></td><td>终端交互</td><td>终端界面（Terminal UI），面向习惯终端操作的开发者</td></tr>
+          <tr><td><strong>命令行</strong></td><td>命令式操作</td><td>面向熟悉 CLI 的开发者，直接输入命令</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>在左侧 <strong>AGENTS 概览</strong>下点击 <strong>AI SHELL</strong>，进入 AI 对话界面</li>
+        <li>点击 <strong>「新建」</strong>创建会话，可指定工作目录（CWD），缺省为 <code>/root/workspace</code></li>
+        <li>在输入框用自然语言描述需求（例如"查询所有运行中的 ECS 实例"），按 Enter 发送（Shift+Enter 换行）</li>
+        <li>输入 <code>/mode</code> 可随时切换「AI 对话」「TUI」「命令行」模式</li>
+      </ol>
+
+      <img class="screenshot" src="images/ai-shell.png?v=20260920" alt="AI SHELL 主界面" />
+      <div class="figcaption">AI SHELL 主界面：居中欢迎页、快捷建议与需求输入框</div>
+
+      <p><strong>输入增强：</strong></p>
+      <ul>
+        <li>输入 <code>/</code> 触发快捷指令：<code>/clear</code>、<code>/compact</code>、<code>/cwd</code>、<code>/help</code>、<code>/mode</code>、<code>/model</code>、<code>/new</code>、<code>/rename</code>、<code>/sessions</code>、<code>/settings</code></li>
+        <li>输入 <code>$</code> 快速引用技能</li>
+        <li>右侧资源管理器中可将文件「添加到对话」作为上下文</li>
+      </ul>
+
+      <p>点击输入框左下方的 <code>mode: Semi-Auto</code> 按钮，可打开会话配置：</p>
+      <table>
+        <thead>
+          <tr><th>配置项</th><th>说明</th><th>可选值</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Session Mode</strong></td><td>控制 AI 的自主性与安全边界</td><td>Auto / Semi-Auto（默认）/ Manual / Plan</td></tr>
+          <tr><td><strong>Reasoning Level</strong></td><td>控制模型产生的推理量</td><td>Low / Medium（默认）/ High</td></tr>
+          <tr><td><strong>Model</strong></td><td>选择使用的 LLM 模型</td><td>hwdevspace/deepseek-v4-flash-0731（默认）/ hwdevspace/deepseek-v4-pro-0813 / hwdevspace/glm-5.1 / hwdevspace/glm-5.2</td></tr>
+        </tbody>
+      </table>
+
+      <img class="screenshot" src="images/ai-shell-config.png?v=20260920" alt="AI SHELL 会话配置" />
+      <div class="figcaption">会话配置面板：Session Mode / Reasoning Level / Model</div>
+    </section>
+
+    <section id="agents">
+      <h2>AGENTS 概览</h2>
+      <p>
+        <strong>AGENTS</strong> 模块默认展示 CodeArts、WorkSwarm、DeepSeek Harness 智能体，根据部署的环境状态动态展示 Agent 入口，
+        目前可以提供 9 个智能体，覆盖代码生成、多 Agent 协作、个人助手、DeepSeek 模型推理、AI 教学辅助等场景。
+      </p>
+    </section>
+
+    <section id="agent-codearts">
+      <h2>CodeArts</h2>
+      <p><strong>CodeArts</strong> 是华为云码道代码智能体 CLI，支持代码编写、分析与优化。支持 <strong>TUI（终端模式）</strong> 和 <strong>WebUI（网页模式）</strong> 两种使用方式。</p>
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧菜单 <strong>CodeArts</strong>，进入该智能体</li>
+        <li>选择使用模式：<strong>TUI</strong>（点击名称直接进入终端界面）或 <strong>WebUI</strong>（点击右侧 WebUI 按钮进入网页界面）</li>
+        <li>在 TUI 终端或 WebUI 网页中输入代码编写、分析或优化需求</li>
+        <li>CodeArts 生成代码建议或分析报告，确认后执行查看结果</li>
+      </ol>
+      <h3>TUI 模式（终端界面）</h3>
+      <img class="screenshot" src="images/agent-codearts-tui.jpg" alt="CodeArts TUI 模式" />
+      <div class="figcaption">CodeArts TUI：终端模式，直接在命令行中交互</div>
+      <h3>WebUI 模式（网页界面）</h3>
+      <img class="screenshot" src="images/agent-codearts-webui.jpg" alt="CodeArts WebUI 模式" />
+      <div class="figcaption">CodeArts WebUI：网页模式，可视化操作界面</div>
+    </section>
+
+    <section id="agent-WorkSwarm">
+      <h2>WorkSwarm</h2>
+      <p><strong>WorkSwarm</strong> 是多 Agent 协作框架，可自动将复杂任务分解并分配给不同 Agent 协作完成。支持 <strong>TUI（终端模式）</strong> 和 <strong>WebUI（网页模式）</strong> 两种使用方式。</p>
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧菜单 <strong>WorkSwarm</strong>，进入该智能体</li>
+        <li>选择使用模式：<strong>TUI</strong>（点击名称直接进入终端界面）或 <strong>WebUI</strong>（点击右侧 WebUI 按钮进入网页界面）</li>
+        <li>输入一个复杂任务</li>
+        <li>WorkSwarm 自动分解任务并分配给不同 Agent 协作处理</li>
+        <li>查看各 Agent 的协作结果</li>
+      </ol>
+      <h3>TUI 模式（终端界面）</h3>
+      <img class="screenshot" src="images/agent-workswarm-tui.jpg" alt="WorkSwarm TUI 模式" />
+      <div class="figcaption">WorkSwarm TUI：终端模式</div>
+      <h3>WebUI 模式（网页界面）</h3>
+      <img class="screenshot" src="images/agent-workswarm-webui.jpg" alt="WorkSwarm WebUI 模式" />
+      <div class="figcaption">WorkSwarm WebUI：网页模式，多 Agent 可视化协作</div>
+    </section>
+
+    <section id="agent-deepseek-harness">
+      <h2>DeepSeek Harness</h2>
+      <p><strong>DeepSeek Harness</strong> 是基于 DeepSeek 大模型的 AI 推理智能体，支持高效模型推理、代码生成与自然语言理解，可无缝集成到开发工作流中。支持 <strong>TUI（终端模式）</strong> 和 <strong>WebUI（网页模式）</strong> 两种使用方式。</p>
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧菜单 <strong>DeepSeek Harness</strong>，进入该智能体</li>
+        <li>选择使用模式：<strong>TUI</strong>（点击名称直接进入终端界面）或 <strong>WebUI</strong>（点击右侧 WebUI 按钮进入网页界面）</li>
+        <li>输入推理、代码生成或分析需求</li>
+        <li>DeepSeek Harness 调用模型进行推理并返回结果</li>
+        <li>查看推理结果，根据需要调整提示词并重新执行</li>
+      </ol>
+      <h3>TUI 模式（终端界面）</h3>
+      <img class="screenshot" src="images/agent-deepseek-harness-tui.jpg" alt="DeepSeek Harness TUI 模式" />
+      <div class="figcaption">DeepSeek Harness TUI：终端模式</div>
+      <h3>WebUI 模式（网页界面）</h3>
+      <img class="screenshot" src="images/agent-deepseek-harness-webui.jpg" alt="DeepSeek Harness WebUI 模式" />
+      <div class="figcaption">DeepSeek Harness WebUI：网页模式，支持会话编排与技能管理</div>
+    </section>
+
+    <section id="agent-hermes">
+      <h2>Hermes Agent</h2>
+      <p><strong>Hermes Agent</strong> 是自我改进型 AI Agent，内置学习循环与长期记忆，可持续优化自身行为。</p>
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧菜单 <strong>Hermes Agent</strong>，进入该智能体</li>
+        <li>输入需要处理或改进的任务</li>
+        <li>Hermes Agent 通过学习循环与长期记忆进行自我改进</li>
+        <li>查看改进后的结果</li>
+      </ol>
+      <img class="screenshot" src="images/agent-hermes.png" alt="Hermes Agent 智能体" />
+      <div class="figcaption">Hermes Agent：自我改进型 AI Agent</div>
+    </section>
+
+    <section id="agent-opencode">
+      <h2>OpenCode</h2>
+      <p><strong>OpenCode</strong> 是开源 AI 编程代理，可连接任意模型完成编程任务。</p>
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧菜单 <strong>OpenCode</strong>，进入该智能体</li>
+        <li>连接目标模型</li>
+        <li>描述编程任务</li>
+        <li>查看生成的代码并确认执行</li>
+      </ol>
+      <img class="screenshot" src="images/agent-opencode.jpg" alt="OpenCode 智能体" />
+      <div class="figcaption">OpenCode：开源 AI 编程代理</div>
+    </section>
+
+    <section id="agent-openclaw">
+      <h2>OpenClaw</h2>
+      <p><strong>OpenClaw</strong> 是开源可编程 AI 个人助手平台，支持多渠道消息接入与自动化任务处理，可处理各类个人任务。支持 <strong>TUI（终端模式）</strong> 和 <strong>WebUI（网页模式）</strong> 两种使用方式。</p>
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧菜单 <strong>OpenClaw</strong>，进入该智能体</li>
+        <li>选择使用模式：<strong>TUI</strong>（点击名称直接进入终端界面）或 <strong>WebUI</strong>（点击右侧 WebUI 按钮进入网页界面）</li>
+        <li>配置个人助手参数与渠道接入</li>
+        <li>输入任务，OpenClaw 自动执行并返回结果</li>
+        <li>查看执行结果，可根据需要调整配置并重新执行</li>
+      </ol>
+      <h3>TUI 模式（终端界面）</h3>
+      <img class="screenshot" src="images/agent-openclaw-tui.jpg" alt="OpenClaw TUI 模式" />
+      <div class="figcaption">OpenClaw TUI：终端模式，命令行交互</div>
+      <h3>WebUI 模式（网页界面）</h3>
+      <img class="screenshot" src="images/agent-openclaw-webui.jpg" alt="OpenClaw WebUI 模式" />
+      <div class="figcaption">OpenClaw WebUI：网页模式，可视化管理个人助手与渠道配置</div>
+    </section>
+
+    <section id="agent-kimicode">
+      <h2>KimiCode</h2>
+      <p><strong>KimiCode</strong> 是智能编程服务，支持代码阅读、编辑与命令执行。</p>
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧菜单 <strong>KimiCode</strong>，进入该智能体</li>
+        <li>描述代码阅读、编辑或命令执行需求</li>
+        <li>KimiCode 执行并返回结果</li>
+        <li>查看执行结果</li>
+      </ol>
+      <img class="screenshot" src="images/agent-kimicode.png" alt="KimiCode 智能体" />
+      <div class="figcaption">KimiCode：智能编程服务</div>
+    </section>
+
+    <section id="agent-prime">
+      <h2>Prime Agent</h2>
+      <p><strong>Prime Agent</strong> 是智能任务调度与编排 Agent，支持将复杂任务自动拆解为子任务并协调多个执行单元协同完成。</p>
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧菜单 <strong>Prime Agent</strong>，进入该智能体</li>
+        <li>输入需要处理的复杂任务或编排需求</li>
+        <li>Prime Agent 自动拆解任务并协调执行单元进行处理</li>
+        <li>查看各子任务的执行结果与整体编排状态</li>
+      </ol>
+    </section>
+
+    <section id="agent-eduswarm">
+      <h2>EduSwarm</h2>
+      <p><strong>EduSwarm</strong> 是 AI 教师团队协作平台（AI 智慧课堂工作台），提供备课、上课、作业、批改、学情全流程 AI 辅助。内置今日课堂、课堂管理、班级管理、课件中心、作业中心、批改报告、教学总览、Agent 配置与统计、Edu SkillHub、Studio、学生端等功能模块，支持任务编排与定时任务。</p>
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧菜单 <strong>EduSwarm</strong>，进入 AI 智慧课堂工作台</li>
+        <li>首次进入可跟随操作指引分步熟悉核心流程，或点击「跳过引导」直接开始</li>
+        <li>通过左侧功能栏进入今日课堂、课件中心、作业中心等模块，也可在输入框用自然语言直接下达教学任务</li>
+        <li>通过输入框下方可配置单 Agent 模式、访问权限与技能，选择模型后发送，EduSwarm 协同 AI 教师团队完成任务并输出结果</li>
+      </ol>
+      <img class="screenshot" src="images/agent-eduswarm.png" alt="EduSwarm AI 智慧课堂工作台" />
+      <div class="figcaption">EduSwarm：AI 智慧课堂工作台</div>
+    </section>
+
+    <section id="tools">
+      <h2>TOOLS</h2>
+      <p><strong>TOOLS</strong> 模块提供开发辅助工具，默认部署以下工具：</p>
+      <table>
+        <thead>
+          <tr><th>工具</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>OpenViking</strong></td><td>智能开发辅助工具，提供代码理解、重构建议与自动化开发支持</td></tr>
+          <tr><td><strong>DevBridge</strong></td><td>隧道管理工具，提供 Web 控制台，支持隧道创建、端口管理与远程访问</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="tool-openviking">
+      <h2>OpenViking</h2>
+      <p><strong>OpenViking</strong> 是智能开发辅助工具，帮助开发者理解代码、提供重构建议与自动化开发支持。支持 <strong>TUI（终端模式）</strong> 和 <strong>WebUI（网页模式）</strong> 两种使用方式。</p>
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧菜单 <strong>TOOLS → OpenViking</strong>，进入该工具</li>
+        <li>选择使用模式：<strong>TUI</strong>（点击名称直接进入终端界面）或 <strong>WebUI</strong>（点击右侧 WebUI 按钮进入网页界面）</li>
+        <li>选择目标代码文件或项目目录</li>
+        <li>OpenViking 分析代码并生成理解报告或重构建议</li>
+        <li>确认建议后执行相应操作</li>
+      </ol>
+      <h3>TUI 模式（终端界面）</h3>
+      <img class="screenshot" src="images/tool-openviking-tui.jpg" alt="OpenViking TUI 模式" />
+      <div class="figcaption">OpenViking TUI：终端模式，选择语言初始界面</div>
+      <img class="screenshot" src="images/tool-openviking-tui-lang.jpg" alt="OpenViking TUI 选择中文后" />
+      <div class="figcaption">OpenViking TUI：选择中文语言后的界面展示</div>
+      <h3>WebUI 模式（网页界面）</h3>
+      <img class="screenshot" src="images/tool-openviking-webui.jpg" alt="OpenViking WebUI 模式" />
+      <div class="figcaption">OpenViking WebUI：网页模式，代码智能助手</div>
+    </section>
+
+    <section id="tool-devbridge">
+      <h2>DevBridge</h2>
+      <p><strong>DevBridge</strong> 是隧道管理工具，提供开发者隧道能力，支持托管（Host）将本地端口服务暴露到公网隧道，以及连接（Connect）将远端隧道端口转发到本地。支持 <strong>TUI（终端模式）</strong> 和 <strong>WebUI（网页模式）</strong> 两种使用方式。当在<strong>环境管理</strong>中部署 DevBridge 环境后，会在 <strong>TOOLS</strong> 菜单下展示入口。</p>
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>在 <strong>环境管理</strong> 中部署 <strong>DevBridge</strong> 环境</li>
+        <li>部署完成后，左侧 <strong>TOOLS</strong> 菜单下会出现 <strong>DevBridge</strong> 入口</li>
+        <li>选择使用模式：<strong>TUI</strong>（点击名称直接进入终端界面）或 <strong>WebUI</strong>（点击右侧 WebUI 按钮进入管理控制台）</li>
+        <li>TUI 模式下可通过命令行管理隧道；WebUI 模式下可在控制台创建隧道、管理端口映射与托管/连接进程</li>
+      </ol>
+      <h3>TUI 模式（终端界面）</h3>
+      <img class="screenshot" src="images/tool-devbridge-tui.jpg" alt="DevBridge TUI 模式" />
+      <div class="figcaption">DevBridge TUI：终端模式，通过命令行管理隧道</div>
+      <h3>WebUI 模式（网页界面）</h3>
+      <img class="screenshot" src="images/tool-devbridge-webui.jpg" alt="DevBridge WebUI 模式" />
+      <div class="figcaption">DevBridge WebUI：隧道管理控制台，可视化创建和管理隧道</div>
+    </section>
+
+    <section id="workenv">
+      <h2>环境管理</h2>
+      <p>环境管理用于浏览和部署各类作业环境，支持搜索与分类筛选：</p>
+      <table>
+        <thead>
+          <tr><th>分类</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>智能体（11）</td><td>代码智能体、多 Agent 协作、个人助手、AI 教学辅助等 11 个智能体环境</td></tr>
+          <tr><td>开发工具（6）</td><td>DevBridge 隧道管理、IAC MCP Server、Agent Browser、HuaweiCloud DevKit、Next AI Draw.io、鸿蒙开发环境</td></tr>
+          <tr><td>数据库（1）</td><td>OpenViking AI 智能体开源上下文数据库</td></tr>
+          <tr><td>基础设施（1）</td><td>Llama 本地 Embedding 环境</td></tr>
+        </tbody>
+      </table>
+
+      <p>共 19 个环境，12 运行中，支持的作业环境：</p>
+      <table>
+        <thead>
+          <tr><th>环境</th><th>类型</th><th>版本</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>AI Shell</strong></td><td>智能体</td><td>内置</td><td>AI Shell · 智驱华为云，对话即部署（TUI）</td></tr>
+          <tr><td><strong>HWCloud CLI</strong></td><td>智能体</td><td>v1.0.5</td><td>基础设施即代码智能体，支持 Terraform、Ansible 等自动化工具</td></tr>
+          <tr><td><strong>CodeArts</strong></td><td>智能体</td><td>v1.0.10</td><td>华为云码道代码智能体，支持代码编写、分析、优化（TUI / WebUI）</td></tr>
+          <tr><td><strong>WorkSwarm</strong></td><td>智能体</td><td>v1.0.9</td><td>多 Agent 协作框架，自动分解问题并分配给不同 Agent</td></tr>
+          <tr><td><strong>DeepSeek Harness</strong></td><td>智能体</td><td>v1.0.9</td><td>DeepSeek 官方多代理智能体开发平台，支持会话编排、技能管理、多模型接入</td></tr>
+          <tr><td><strong>Hermes Agent</strong></td><td>智能体</td><td>v1.0.5</td><td>Nous Research 自我改进型 AI Agent，内置学习循环与长期记忆</td></tr>
+          <tr><td><strong>OpenCode</strong></td><td>智能体</td><td>v1.0.5</td><td>开源 AI 编程代理，可连接 Claude、GPT、Gemini 等任意模型</td></tr>
+          <tr><td><strong>OpenClaw</strong></td><td>智能体</td><td>v1.0.4</td><td>开源可编程 AI 个人助手平台，支持自动化任务、工具调用</td></tr>
+          <tr><td><strong>KimiCode</strong></td><td>智能体</td><td>v1.0.4</td><td>智能编程服务，支持代码阅读、编辑、命令执行、网页搜索（仅 TUI）</td></tr>
+          <tr><td><strong>Prime Agent</strong></td><td>智能体</td><td>v1.0.4</td><td>智能任务调度与编排 Agent，自动拆解复杂任务并协调多执行单元协同（仅 TUI）</td></tr>
+          <tr><td><strong>EduSwarm</strong></td><td>智能体</td><td>v1.0.3</td><td>AI 教师团队协作平台，覆盖备课、上课、作业、批改、学情全流程（仅 WebUI）</td></tr>
+          <tr><td><strong>DevBridge</strong></td><td>开发工具</td><td>v1.0.1</td><td>隧道管理工具，支持网络隧道创建、端口管理与远程连接</td></tr>
+          <tr><td><strong>IAC MCP Server</strong></td><td>开发工具</td><td>—</td><td>云部署 IaC 助手，覆盖需求分析、资源规划、成本估算、Terraform 部署、排错与资源销毁全流程（未部署）</td></tr>
+          <tr><td><strong>Agent Browser</strong></td><td>开发工具</td><td>—</td><td>无头浏览器自动化环境（未部署）</td></tr>
+          <tr><td><strong>HuaweiCloud DevKit</strong></td><td>开发工具</td><td>—</td><td>华为云开发套件，构建、部署、运维全程受控（未部署）</td></tr>
+          <tr><td><strong>Next AI Draw.io</strong></td><td>开发工具</td><td>—</td><td>AI 自然语言生成 Draw.io 图表（未部署）</td></tr>
+          <tr><td><strong>鸿蒙开发环境</strong></td><td>开发工具</td><td>—</td><td>基于 GLM 模型鸿蒙增训、深度适配 ArkTS 语言，支持云端编译打包，支持云端 + 本地模拟器调测（待开放）</td></tr>
+          <tr><td><strong>OpenViking</strong></td><td>数据库</td><td>v1.0.2</td><td>AI 智能体的开源上下文数据库</td></tr>
+          <tr><td><strong>Llama</strong></td><td>基础设施</td><td>—</td><td>基于 llama.cpp 的本地 Embedding 环境，内置 bge-small-zh-v1.5 向量模型（未部署）</td></tr>
+          <tr><td><strong>SRE</strong></td><td>智能体</td><td>—</td><td>环境运维、故障排查、扩缩容规划、费用查询（待开放）</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧 <strong>环境管理</strong> 进入环境列表</li>
+        <li>使用顶部<strong>搜索框</strong>检索环境，或按分类（智能体 / 开发工具 / 数据库 / 基础设施）筛选</li>
+        <li>每个环境提供 <strong>TUI</strong>（终端界面）或 <strong>WebUI</strong>（网页界面）入口</li>
+        <li>支持<strong>停止</strong>、<strong>删除</strong>操作，部分环境支持<strong>升级</strong></li>
+      </ol>
+
+      <img class="screenshot" src="images/workenv.png?v=20260920" alt="环境管理" />
+      <div class="figcaption">环境管理：作业环境列表、分类筛选与 TUI / WebUI 入口</div>
+    </section>
+
+    <section id="agent-work">
+      <h2>AGENT WORK</h2>
+      <p><strong>AGENT WORK</strong>（Beta）是智能体工作平台，提供从 Agent 定义、任务承载、多智能体协作到周期自动化的完整工作流。在左侧导航展开 <strong>AGENT WORK</strong> 菜单，包含 5 个子模块：</p>
+      <table>
+        <thead>
+          <tr><th>子模块</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Agent 管理</strong></td><td>创建和管理自定义 AI Agent，配置人格、模型与运行时</td></tr>
+          <tr><td><strong>项目</strong></td><td>承载 Agent 任务的容器，定义标准与验证规则，支持关联代码仓库自动校验</td></tr>
+          <tr><td><strong>任务</strong></td><td>Agent 任务目标管理，跟踪任务执行状态与进度</td></tr>
+          <tr><td><strong>小队</strong></td><td>将多个智能体组合为协作小队，由 Leader 协同完成复杂任务</td></tr>
+          <tr><td><strong>自动化</strong></td><td>为智能体或小队安排周期性任务</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="agent-work-agents">
+      <h2>Agent 管理</h2>
+      <p>管理空间内的 AI Agent 实例。内置 <strong>AI SHELL</strong> Agent 默认在线，支持通过 <strong>聊天</strong> 直接对话，或通过 <strong>IM 连接</strong> 接入即时消息渠道：</p>
+      <ol class="steps">
+        <li>点击左侧 <strong>AGENT WORK → Agent 管理</strong> 进入 Agent 列表</li>
+        <li>使用顶部<strong>搜索框</strong>按名称、模型检索 Agent，点击 <strong>我的 SKILL</strong> 查看可用技能</li>
+        <li>点击 <strong>+ 创建 Agent</strong>，填写 Agent 名称与人格，选择运行时，可配置环境变量、Skills 与 MCP 服务器</li>
+        <li>通过<strong>快速入口</strong>开关控制 Agent 展示，使用 <strong>聊天</strong> / <strong>IM 连接</strong> 快捷操作</li>
+      </ol>
+      <img class="screenshot" src="images/agentwork-agents.png" alt="Agent 管理" />
+      <div class="figcaption">Agent 管理：Agent 列表、状态与运行时监控、聊天 / IM 连接入口</div>
+      <img class="screenshot" src="images/agentwork-agents-create.png" alt="创建 Agent" />
+      <div class="figcaption">创建 Agent：填写名称与人格，选择运行时，可配置环境变量、Skills 与 MCP 服务器</div>
+    </section>
+
+    <section id="agent-work-projects">
+      <h2>项目</h2>
+      <p>项目是承载 Agent 任务的容器，可定义标准与验证规则，支持关联代码仓库自动校验：</p>
+      <ol class="steps">
+        <li>点击左侧 <strong>AGENT WORK → 项目</strong> 进入项目列表</li>
+        <li>点击 <strong>+ 新建项目</strong>（首次使用可点击 <strong>+ 创建第一个项目</strong>），选择项目类型（<strong>无仓库项目</strong> / <strong>代码仓库</strong>），填写项目名称与验收要求</li>
+        <li>支持按项目名称搜索与筛选</li>
+      </ol>
+      <img class="screenshot" src="images/agentwork-projects.png" alt="项目" />
+      <div class="figcaption">项目：承载 Agent 任务的容器，创建后可为任务定义验证规则</div>
+      <img class="screenshot" src="images/agentwork-projects-create.png" alt="新建项目" />
+      <div class="figcaption">新建项目：选择项目类型（无仓库项目 / 代码仓库），填写项目名称与验收要求</div>
+    </section>
+
+    <section id="agent-work-tasks">
+      <h2>任务</h2>
+      <p>面向目标的任务管理，实时跟踪 Agent 执行状态与进度：</p>
+      <ol class="steps">
+        <li>点击左侧 <strong>AGENT WORK → 任务</strong> 进入任务列表</li>
+        <li>点击 <strong>+ 新建任务</strong>（首次使用可点击 <strong>+ 创建第一个任务</strong>），填写标题与描述，选择负责人（Agent 或小队）与所属项目</li>
+        <li>注意：新建任务需至少存在一个项目，请先在 <strong>项目</strong> 页面创建项目</li>
+        <li>在任务列表中跟踪 Agent 执行状态与进度</li>
+      </ol>
+      <img class="screenshot" src="images/agentwork-tasks.png" alt="任务" />
+      <div class="figcaption">任务：创建任务目标并追踪 Agent 执行进度</div>
+      <img class="screenshot" src="images/agentwork-tasks-create.png" alt="新建任务" />
+      <div class="figcaption">新建任务：填写标题与描述，选择负责人（Agent / 小队）、状态与所属项目</div>
+    </section>
+
+    <section id="agent-work-squads">
+      <h2>小队</h2>
+      <p>将多个智能体组合为协作小队，由 Leader 协同完成复杂任务：</p>
+      <ol class="steps">
+        <li>点击左侧 <strong>AGENT WORK → 小队</strong> 进入小队列表</li>
+        <li>点击 <strong>+ 创建小队</strong>（首次使用可点击 <strong>+ 创建第一个小队</strong>），设置名称与 Leader，勾选成员，可指定审查者并填写小队介绍与协作说明</li>
+        <li>支持按小队名称、Leader 或成员搜索</li>
+      </ol>
+      <img class="screenshot" src="images/agentwork-squads.png" alt="小队" />
+      <div class="figcaption">小队：多智能体协作，由 Leader 分工配合完成复杂任务</div>
+      <img class="screenshot" src="images/agentwork-squads-create.png" alt="新建小队" />
+      <div class="figcaption">新建小队：设置名称与 Leader，选择成员与审查者，填写小队介绍与协作说明</div>
+    </section>
+
+    <section id="agent-work-automation">
+      <h2>自动化</h2>
+      <p>为智能体或小队安排周期性任务，实现定时自动执行：</p>
+      <ol class="steps">
+        <li>点击左侧 <strong>AGENT WORK → 自动化</strong> 进入自动化列表</li>
+        <li>点击 <strong>+ 新建</strong> 创建自动化计划：填写计划名称与任务内容，选择所属项目与负责人，设置触发时间（支持 <strong>高级 Cron</strong> 表达式）</li>
+        <li>支持按名称搜索自动化任务</li>
+      </ol>
+      <img class="screenshot" src="images/agentwork-automation.png" alt="自动化" />
+      <div class="figcaption">自动化：为智能体或小队安排周期性任务</div>
+      <img class="screenshot" src="images/agentwork-automation-create.png" alt="新建计划" />
+      <div class="figcaption">新建计划：填写计划名称与任务内容，选择所属项目与负责人，设置触发时间</div>
+    </section>
+
+    <section id="extensions">
+      <h2>EXTENSIONS</h2>
+      <p><strong>EXTENSIONS</strong> 模块提供扩展能力入口，包含华为云 Skills 和 Channels 两个子模块：</p>
+      <table>
+        <thead>
+          <tr><th>子模块</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>华为云 Skills</strong></td><td>预置的华为云服务技能集合，提供云资源查询、运维等快捷能力</td></tr>
+          <tr><td><strong>Channels</strong></td><td>消息渠道连接管理，支持飞书、微信、企业微信等平台对接</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="skills">
+      <h2>华为云 Skills</h2>
+      <p><strong>华为云 Skills</strong> 是技能市场，提供华为云各产品的技能（当前 79 个，可查看已安装数量）。</p>
+      <table>
+        <thead>
+          <tr><th>技能类别</th><th>示例</th><th>用途</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>昇腾 Ascend NPU</td><td>ascend-command、models-deploy</td><td>NPU 管理、模型部署、算子优化</td></tr>
+          <tr><td>容器 CCE / CCI</td><td>cluster-management、metric-analyzer</td><td>集群管理、事件分析、指标分析</td></tr>
+          <tr><td>云服务器 ECS</td><td>ecs-alert、passwordless-login</td><td>监控告警、免密登录配置</td></tr>
+          <tr><td>轻量服务器 Flexus L</td><td>server-manage、deploy-WorkSwarm</td><td>实例管理、一键部署</td></tr>
+          <tr><td>对象存储 OBS</td><td>bucket-create、obs-upload</td><td>桶创建、文件上传、静态网站托管</td></tr>
+          <tr><td>数据仓库 DWS</td><td>dws-cpu-diag、sql-check</td><td>性能诊断、SQL 检查</td></tr>
+          <tr><td>资源查询</td><td>computing-query、network-query、iam-query</td><td>查询计算 / 网络 / 存储 / 监控 / 身份资源</td></tr>
+          <tr><td>技能工具</td><td>skill-creator、skill-tester、skill-audit</td><td>技能创建、测试、审计</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧 <strong>华为云 Skills</strong> 进入技能市场</li>
+        <li>使用顶部<strong>搜索框</strong>按名称检索技能</li>
+        <li>勾选「仅显示已安装」可筛选已安装的技能</li>
+        <li>点击技能的<strong>安装</strong>按钮完成安装，点击<strong>卸载</strong>移除</li>
+      </ol>
+
+      <img class="screenshot" src="images/skills.png" alt="华为云 Skills" />
+      <div class="figcaption">华为云 Skills 技能市场：技能搜索、安装与卸载</div>
+    </section>
+
+    <section id="channels">
+      <h2>Channels 渠道</h2>
+      <p><strong>Channels</strong> 用于连接外部消息平台。Agent 通过它收发消息，从而接入飞书、微信、企业微信等平台。</p>
+      <table>
+        <thead>
+          <tr><th>渠道</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>飞书</strong></td><td>支持消息接收、机器人回复、文档协作</td></tr>
+          <tr><td><strong>微信</strong></td><td>支持扫码登录、消息收发、配对码验证</td></tr>
+          <tr><td><strong>企业微信</strong></td><td>支持 AI 机器人扫码授权与消息收发</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>操作步骤：</strong></p>
+      <ol class="steps">
+        <li>点击左侧 <strong>Channels</strong> 进入渠道列表</li>
+        <li>点击顶部「配置华为云 AKSK」，管理华为云访问凭证</li>
+        <li>选择目标渠道（飞书 / 微信 / 企业微信），点击<strong>连接</strong>或<strong>配置</strong>建立连接</li>
+      </ol>
+      <div class="tip">
+        <b>提示：</b>每个 Channel 通过配置凭证（如 App ID、App Secret）与外部平台建立安全连接，支持扫码注册与手动配置两种方式。
+      </div>
+
+      <img class="screenshot" src="images/channels.png" alt="Channels 渠道" />
+      <div class="figcaption">Channels 渠道：飞书 / 微信 / 企业微信连接配置</div>
+    </section>
+
+    <section id="resources">
+      <h2>RESOURCES</h2>
+      <p><strong>RESOURCES</strong> 模块提供文档与资源入口，包含开发文档站和 Agent 接入指引：</p>
+      <table>
+        <thead>
+          <tr><th>入口</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>文档站</strong></td><td>《AI 开发者空间操作指南》（本文档），查看完整的产品使用说明</td></tr>
+          <tr><td><strong>Agent 接入</strong></td><td>IACMCPServer 使用指南文档</td></tr>
+        </tbody>
+      </table>
+      
+    </section>
+
+    <section id="resources-docs">
+      <h2>文档站</h2>
+      <p><strong>文档站</strong> 是 AI 开发者空间的官方操作指南文档，点击左侧菜单 <strong>RESOURCES → 文档站</strong> 即可进入。文档站涵盖以下内容：</p>
+      <ul>
+        <li>AI SHELL 的使用方法（AI 对话模式、命令行模式、会话配置）</li>
+        <li>AGENTS 模块各智能体的操作说明（CodeArts、WorkSwarm 等）</li>
+        <li>环境管理的部署与配置指引</li>
+        <li>华为云 Skills 和 Channels 的接入说明</li>
+        <li>TOOLS 模块（OpenViking、DevBridge）的使用指南</li>
+        <li>RESOURCES、文件管理、设置与反馈等全部功能模块说明</li>
+      </ul>
+      <div class="tip">
+        <b>说明：</b>本文档即为「文档站」所指向的操作指南，当前页面即为文档站内容。可通过左侧导航菜单快速定位到各个功能模块的使用说明。
+      </div>
+    </section>
+
+    <section id="resources-agent">
+      <h2>Agent 接入</h2>
+      <p><strong>Agent 接入</strong> 提供 IACMCPServer 使用指南，指导开发者通过 MCP 协议将基础设施即代码能力接入到 AI 开发者空间。点击左侧菜单 <strong>RESOURCES → Agent 接入</strong> 即可跳转到 GitCode 上的 IACMCPServer 文档。</p>
+      <p><strong>IACMCPServer 使用指南包含以下内容：</strong></p>
+      <ul>
+        <li>IACMCPServer 概述：通过 MCP 协议暴露云基础设施部署能力</li>
+        <li>接入流程：配置 MCP 客户端（opencode、codearts、Cursor 等）</li>
+        <li>能力说明：支持多云资源编排、部署、排错与销毁全流程</li>
+        <li>配置说明：timeout、tool_call 等参数配置</li>
+      </ul>
+      <div class="tip">
+        <b>提示：</b>点击 Agent 接入 菜单项将跳转到 GitCode（gitcode.com）上的 Hi-Tools/runtime 仓库，查看 IACMCPServer 完整使用指南。
+      </div>
+      <img class="screenshot" src="images/resources-agent.png" alt="IACMCPServer 使用指南" />
+      <div class="figcaption">Agent 接入：IACMCPServer 使用指南（GitCode）</div>
+    </section>
+
+    <section id="files">
+      <h2>文件管理</h2>
+      <p>点击右上角「展开右侧面板」，可打开文件管理器：</p>
+      <ul>
+        <li><strong>搜索文件名</strong>：按名称检索文件</li>
+        <li><strong>批量操作</strong>：对多个文件执行批量处理</li>
+        <li><strong>上传</strong>：上传本地文件</li>
+        <li><strong>新建文件 / 新建文件夹</strong>：在工作区创建文件或目录</li>
+      </ul>
+
+      <img class="screenshot" src="images/files.png" alt="文件管理" />
+      <div class="figcaption">文件管理：文件搜索、上传、新建文件 / 文件夹</div>
+    </section>
+
+    <section id="settings">
+      <h2>设置与反馈</h2>
+      <table>
+        <thead>
+          <tr><th>入口</th><th>功能</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>设置</strong></td><td>基本信息：账号 ID / 实名认证状态 / 账号中心；主题设置：浅色模式 / 深色模式 / 跟随设备</td></tr>
+          <tr><td><strong>问题反馈</strong></td><td>提交使用问题与意见反馈</td></tr>
+        </tbody>
+      </table>
+
+      <img class="screenshot" src="images/settings.png" alt="设置" />
+      <div class="figcaption">设置：基本信息与主题模式切换（浅色 / 深色 / 跟随设备）</div>
+    </section>
+
+    <section id="system-monitoring">
+      <h2>系统监控</h2>
+      <p class="lead"><strong>系统监控</strong>用于实时查看 AI 开发者空间宿主机的资源使用情况。</p>
+
+      <img class="screenshot" src="images/system-monitoring.png" alt="系统监控" />
+      <div class="figcaption">系统监控：资源概览、作业环境资源、资源占用排行与口径说明</div>
+
+      <h3>操作步骤</h3>
+      <ol class="steps">
+        <li>在左侧点击个人用户名，选择 <strong>系统监控</strong> 进入监控页面</li>
+        <li>查看顶部 <strong>系统资源概览</strong>，点击「立即刷新」按钮可实时看到最新的使用情况</li>
+        <li>在 <strong>作业环境资源</strong> 区域，点击 <strong>智能体 / 开发工具 / 数据库</strong> 标签按类型筛选</li>
+        <li>在 <strong>资源占用排行</strong> 区域，点击右上角 <strong>内存 / CPU / 磁盘</strong> 标签切换排序维度</li>
+      </ol>
+
+      <h3>系统资源概览</h3>
+      <ul>
+        <li>宿主机整体资源使用情况，包含 CPU 使用率、内存、TMP、磁盘、系统负载五项指标。</li>
+      </ul>
+      <table>
+        <thead>
+          <tr><th>指标</th><th>展示内容</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>CPU 使用率</td><td>当前使用率、核数、负载、使用上限及变化趋势</td></tr>
+          <tr><td>内存</td><td>已用与总量、可用内存、使用上限及变化趋势</td></tr>
+          <tr><td>TMP / tmpfs</td><td>占用大小、tmpfs 挂载数及挂载路径</td></tr>
+          <tr><td>磁盘</td><td>已用与总量、已用占比、可用空间、使用上限</td></tr>
+          <tr><td>系统负载</td><td>当前负载、1/5/15 分钟平均负载、核数及变化趋势</td></tr>
+        </tbody>
+      </table>
+
+      <h3>作业环境资源</h3>
+      <ul>
+        <li>展示所有已部署作业环境的资源占用明细。可按智能体、开发工具、数据库筛选，只查看某一类型的作业环境。</li>
+        <li>每张卡片对应一个环境，展示它的内存 RSS、CPU、目录大小、运行状态和进程数。尚无数据的指标显示为"—"。</li>
+      </ul>
+
+      <h3>资源占用排行</h3>
+      <ul>
+        <li>展示占用最高的 12 个作业环境，不含系统进程。可按内存、CPU、磁盘切换排序指标，按所选指标降序排序。</li>
+      </ul>
+
+      <h3>口径说明</h3>
+      <ul>
+        <li>内存 = 宿主机 <code>/root/runtime/&lt;环境&gt;</code> 进程 RSS 聚合；CPU = <code>@command:proc</code> 两次采样差（单核口径）。数据由 job-env-manager 接口提供，页面底部标注渲染时间。</li>
+      </ul>
+    </section>
+    <section id="video-tutorials">
+      <h2>视频指导</h2>
+      <p class="lead">通过视频快速了解 AI 开发者空间的核心功能与实操方法。</p>
+
+      <div class="video-filters" id="video-filters"></div>
+      <div class="video-grid" id="video-list"></div>
+      <div class="video-pagination" id="video-pagination"></div>
+    </section>
+
+  </main>
+</div>
+
+<div class="video-modal" id="video-modal" aria-hidden="true">
+  <div class="video-modal-backdrop" id="video-modal-backdrop"></div>
+  <div class="video-modal-box" role="dialog" aria-modal="true" aria-label="视频播放">
+    <div class="video-modal-head">
+      <span class="video-modal-title" id="video-modal-title"></span>
+      <button class="video-modal-close" id="video-modal-close" type="button" aria-label="关闭">×</button>
+    </div>
+    <video id="video-modal-player" controls playsinline preload="metadata"></video>
+  </div>
+</div>
+
+<script>
+  const chapters = [
+    { id: 'intro', title: '简介' },
+    { id: 'home', title: '首页' },
+    { id: 'ai-shell', title: 'AI SHELL' },
+    { id: 'agents', title: 'AGENTS 概览' },
+    { id: 'agent-codearts', title: 'CodeArts' },
+    { id: 'agent-WorkSwarm', title: 'WorkSwarm' },
+    { id: 'agent-deepseek-harness', title: 'DeepSeek Harness' },
+    { id: 'agent-hermes', title: 'Hermes Agent' },
+    { id: 'agent-opencode', title: 'OpenCode' },
+    { id: 'agent-openclaw', title: 'OpenClaw' },
+    { id: 'agent-kimicode', title: 'KimiCode' },
+    { id: 'agent-prime', title: 'Prime Agent' },
+    { id: 'agent-eduswarm', title: 'EduSwarm' },
+    { id: 'workenv', title: '环境管理' },
+    { id: 'agent-work', title: 'AGENT WORK' },
+    { id: 'agent-work-agents', title: 'Agent 管理' },
+    { id: 'agent-work-projects', title: '项目' },
+    { id: 'agent-work-tasks', title: '任务' },
+    { id: 'agent-work-squads', title: '小队' },
+    { id: 'agent-work-automation', title: '自动化' },
+    { id: 'extensions', title: 'EXTENSIONS' },
+    { id: 'skills', title: '华为云 Skills' },
+    { id: 'channels', title: 'Channels' },
+    { id: 'tools', title: 'TOOLS' },
+    { id: 'tool-openviking', title: 'OpenViking' },
+    { id: 'tool-iacmcp', title: 'IACMCPServer' },
+    { id: 'tool-devbridge', title: 'DevBridge' },
+    { id: 'resources', title: 'RESOURCES' },
+    { id: 'resources-docs', title: '文档站' },
+    { id: 'resources-agent', title: 'Agent 接入' },
+    { id: 'files', title: '文件管理' },
+    { id: 'settings', title: '设置与反馈' },
+    { id: 'system-monitoring', title: '系统监控' },
+    { id: 'video-tutorials', title: '视频指导' }
+  ];
+
+  // 表格适配：宽表包一层横向滚动容器，避免在小屏下撑破布局
+  document.querySelectorAll('.content table').forEach(function (t) {
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
+    t.parentNode.insertBefore(wrap, t);
+    wrap.appendChild(t);
+  });
+
+  function hasChapter(id) {
+    return chapters.some(c => c.id === id);
+  }
+
+  function renderPage(id) {
+    chapters.forEach(c => {
+      const sec = document.getElementById(c.id);
+      if (sec) sec.classList.toggle('page-active', c.id === id);
+    });
+    document.querySelectorAll('#toc a').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+    });
+    window.scrollTo(0, 0);
+  }
+
+  // 切换页面并同步 URL hash：点击菜单后链接地址随之变化，支持链接直达与浏览器前进/后退
+  function showPage(id) {
+    if (location.hash !== '#' + id) {
+      location.hash = id; // 触发 hashchange，由下方监听统一渲染
+    } else {
+      renderPage(id);
+    }
+  }
+
+  window.addEventListener('hashchange', function () {
+    const id = location.hash.slice(1);
+    renderPage(hasChapter(id) ? id : 'intro');
+  });
+
+  chapters.forEach((c, i) => {
+    const sec = document.getElementById(c.id);
+    if (!sec) return;
+    const nav = document.createElement('nav');
+    nav.className = 'chapter-nav';
+    let html = '';
+    if (i > 0) {
+      html += '<a class="prev" href="#' + chapters[i - 1].id + '">← 上一篇：' + chapters[i - 1].title + '</a>';
+    }
+    if (i < chapters.length - 1) {
+      html += '<a class="next" href="#' + chapters[i + 1].id + '">下一篇：' + chapters[i + 1].title + ' →</a>';
+    }
+    nav.innerHTML = html;
+    sec.appendChild(nav);
+  });
+
+  // 视频列表
+  // 视频/封面均托管在 tools-artifact（国内可达，来源：视频内容(1).xlsx）；封面目录 screen/，缺传的用本地 video/posters/ 兜底
+  const VIDEO_BASE = 'https://tools-artifact.developer.huaweicloud.com/sharedata/home/video/';
+  const POSTER_BASE = 'https://tools-artifact.developer.huaweicloud.com/sharedata/home/screen/';
+  const videoList = [
+    { src: VIDEO_BASE + 'space.mp4', poster: POSTER_BASE + 'space1.jpg', title: '什么是AI开发者空间？', dur: 70.1 },
+    { src: VIDEO_BASE + 'codearts.mp4', title: '码道CodeArts 快速上手：从自动安装到一句话开发', cat: 'codearts', dur: 106.1 },
+    { src: VIDEO_BASE + 'workswarm.mp4', poster: POSTER_BASE + 'workswarm.png', title: 'WorkSwarm快速上手：你的专属桌面智能搭子', cat: 'workswarm', dur: 140.9 },
+    { src: VIDEO_BASE + 'agentwork.mp4', poster: POSTER_BASE + 'agentwork.png', title: 'AgentWork实践：多智能体协作完成毕业设计', cat: 'agentwork', dur: 187.7 },
+    { src: VIDEO_BASE + 'envrioment.mp4', poster: POSTER_BASE + 'envrioment.png', title: '自定义作业环境：AI创建与手动搭建', cat: 'env', dur: 123.5 },
+    { src: VIDEO_BASE + 'devBridge.mp4', title: 'DevBridge开发者隧道：DevOps利器', cat: 'devbridge', dur: 61.9 },
+    { src: VIDEO_BASE + 'devBridge_2.mp4', poster: POSTER_BASE + 'devBridge_2.png', title: 'DevBridge实践：一键分享本地服务', cat: 'devbridge', dur: 71.9 },
+    { src: VIDEO_BASE + 'devBridge_1.mp4', title: 'DevBridge实践：CI开发', cat: 'devbridge', dur: 60 },
+    { src: VIDEO_BASE + 'OpenViKing_Agent.mp4', title: 'OpenViking多Agent记忆集成', cat: 'openviking', dur: 90.3 },
+    { src: VIDEO_BASE + 'OpenViKing_Embing.mp4', title: 'OpenViking切换本地Embedding模型', cat: 'openviking', dur: 73.2 },
+    { src: VIDEO_BASE + 'OpenViKing_long.mp4', title: 'OpenViking实践：长期记忆集成', cat: 'openviking', dur: 97.7 },
+    { src: VIDEO_BASE + 'openviking_model.mp4', title: 'OpenViking实践： Embedding切换排障', cat: 'openviking', dur: 96 },
+    { src: VIDEO_BASE + 'data.mp4', title: '一句话做出数据大屏', dur: 180.1 }
+  ];
+
+  // 动态渲染视频卡片（筛选 + 分页）
+  const videoGrid = document.getElementById('video-list');
+  const videoPagination = document.getElementById('video-pagination');
+  const videoFilters = document.getElementById('video-filters');
+  const VIDEO_PAGE_SIZE = 9; // 每页视频数
+  const hoverPreloads = {}; // 记录已悬停预加载过的视频，避免重复请求
+  let videoCurrentPage = 1;
+
+  // 视频分类筛选：支持多选，取所选分类的并集；未选任何分类时展示全部
+  const videoCats = [
+    { key: 'codearts', label: 'CodeArts' },
+    { key: 'workswarm', label: 'WorkSwarm' },
+    { key: 'agentwork', label: 'AgentWork' },
+    { key: 'env', label: '作业环境' },
+    { key: 'devbridge', label: 'DevBridge' },
+    { key: 'openviking', label: 'OpenViking' }
+  ];
+  const activeCats = new Set();
+
+  function getFilteredVideos() {
+    if (!activeCats.size) return videoList;
+    return videoList.filter(function (v) { return v.cat && activeCats.has(v.cat); });
+  }
+
+  function renderVideoFilters() {
+    if (!videoFilters) return;
+    let html = '<button type="button" data-cat="" class="video-filter' + (activeCats.size === 0 ? ' active' : '') + '">全部</button>';
+    videoCats.forEach(function (c) {
+      html += '<button type="button" data-cat="' + c.key + '" class="video-filter' + (activeCats.has(c.key) ? ' active' : '') + '">' + c.label + '</button>';
+    });
+    videoFilters.innerHTML = html;
+  }
+
+  if (videoFilters) {
+    videoFilters.addEventListener('click', function (e) {
+      const btn = e.target.closest('button[data-cat]');
+      if (!btn) return;
+      const key = btn.getAttribute('data-cat');
+      if (!key) {
+        activeCats.clear(); // 全部：清空多选
+      } else if (activeCats.has(key)) {
+        activeCats.delete(key);
+      } else {
+        activeCats.add(key);
+      }
+      renderVideoFilters();
+      renderVideoPage(1);
+    });
+  }
+
+  function videoCardHTML(item) {
+    // 封面图替代 <video>：页面加载时只下载小图（约几十KB），视频数据点击后才加载
+    // 封面取值：优先 item.poster；否则按 src 文件名推导 tools-artifact screen/ 下同名 jpg（缺传文件可用 item.poster 指本地兜底）
+    const poster = item.poster || POSTER_BASE + item.src.split('/').pop().replace(/\.mp4$/, '.jpg');
+    return '<div class="video-card">' +
+      '<div class="video-thumb" data-src="' + item.src + '" data-title="' + item.title + '">' +
+      '<img class="video-poster" loading="lazy" src="' + poster + '" alt="' + item.title + '">' +
+      '<button class="video-play" type="button" aria-label="播放视频"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>' +
+      '<span class="video-duration">' + formatTime(item.dur) + '</span>' +
+      '</div>' +
+      '<p class="video-title">' + item.title + '</p>' +
+      '</div>';
+  }
+
+  // 绑定视频卡片事件：点击时才创建 video 元素加载视频（翻页重新渲染后需重新绑定）
+  function bindVideoCards() {
+    document.querySelectorAll('.video-thumb').forEach(thumb => {
+      // 桌面端悬停预加载：悬停 300ms 后才预取视频头部（512KB），
+      // 避免鼠标快速扫过网格时批量请求挤占连接，导致封面图加载变慢
+      if (!thumb.dataset.hoverBound) {
+        let hoverTimer = null;
+        thumb.addEventListener('mouseenter', function () {
+          const src = thumb.getAttribute('data-src');
+          hoverTimer = setTimeout(function () {
+            if (!hoverPreloads[src]) {
+              hoverPreloads[src] = true;
+              fetch(src, { headers: { 'Range': 'bytes=0-524287' } }).catch(() => {});
+            }
+          }, 300);
+        });
+        thumb.addEventListener('mouseleave', function () {
+          clearTimeout(hoverTimer);
+        });
+        thumb.dataset.hoverBound = '1';
+      }
+      thumb.addEventListener('click', function (e) {
+        const inlineVideo = thumb.querySelector('video');
+        // 桌面端：弹框播放（弹框打开时才设置 src）
+        if (!window.matchMedia('(pointer: coarse)').matches) {
+          openVideoModal(thumb.getAttribute('data-src'), thumb.getAttribute('data-title'));
+          return;
+        }
+        // 移动端：点击直接在卡片内播放，视频元素按需创建
+        // 带原生控制条后，视频区域的点击交给原生控件处理
+        if (inlineVideo && inlineVideo.hasAttribute('controls') && e.target === inlineVideo) return;
+        // 同一时间只播放一个视频：其他卡片恢复封面图状态
+        document.querySelectorAll('.video-thumb video').forEach(other => {
+          if (other !== inlineVideo) {
+            other.pause();
+            const t = other.closest('.video-thumb');
+            t.classList.remove('inline-playing', 'video-loaded');
+            other.remove();
+          }
+        });
+        if (!inlineVideo) {
+          const v = document.createElement('video');
+          v.src = thumb.getAttribute('data-src');
+          v.playsInline = true;
+          // 播放结束：恢复播放图标（保留视频画面）
+          v.addEventListener('ended', function () {
+            v.removeAttribute('controls');
+            thumb.classList.remove('inline-playing');
+          });
+          thumb.insertBefore(v, thumb.firstChild);
+          thumb.classList.add('video-loaded', 'inline-playing');
+          v.setAttribute('controls', '');
+          v.play().catch(function () {});
+          return;
+        }
+        if (inlineVideo.paused) {
+          inlineVideo.setAttribute('controls', '');
+          thumb.classList.add('inline-playing');
+          inlineVideo.play().catch(function () {});
+        } else {
+          inlineVideo.pause();
+        }
+      });
+    });
+  }
+
+  function renderVideoPagination() {
+    if (!videoPagination) return;
+    // 只有一页时不显示分页控件
+    const pageCount = Math.ceil(getFilteredVideos().length / VIDEO_PAGE_SIZE);
+    if (pageCount <= 1) { videoPagination.innerHTML = ''; return; }
+    let html = '<button type="button" data-page="prev" aria-label="上一页"' + (videoCurrentPage === 1 ? ' disabled' : '') + '>‹</button>';
+    for (let i = 1; i <= pageCount; i++) {
+      html += '<button type="button" data-page="' + i + '"' + (i === videoCurrentPage ? ' class="active"' : '') + '>' + i + '</button>';
+    }
+    html += '<button type="button" data-page="next" aria-label="下一页"' + (videoCurrentPage === pageCount ? ' disabled' : '') + '>›</button>';
+    videoPagination.innerHTML = html;
+  }
+
+  function renderVideoPage(page) {
+    if (!videoGrid) return;
+    const filtered = getFilteredVideos();
+    const pageCount = Math.max(1, Math.ceil(filtered.length / VIDEO_PAGE_SIZE));
+    videoCurrentPage = Math.min(Math.max(1, page), pageCount);
+    const start = (videoCurrentPage - 1) * VIDEO_PAGE_SIZE;
+    videoGrid.innerHTML = filtered.slice(start, start + VIDEO_PAGE_SIZE).map(videoCardHTML).join('');
+    bindVideoCards();
+    renderVideoPagination();
+  }
+
+  if (videoPagination) {
+    videoPagination.addEventListener('click', function (e) {
+      const btn = e.target.closest('button[data-page]');
+      if (!btn || btn.disabled) return;
+      const p = btn.getAttribute('data-page');
+      const next = p === 'prev' ? videoCurrentPage - 1 : (p === 'next' ? videoCurrentPage + 1 : parseInt(p, 10));
+      if (next === videoCurrentPage) return;
+      renderVideoPage(next);
+      // 翻页后回到视频列表顶部，便于浏览当前页内容
+      videoGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  renderVideoFilters();
+  renderVideoPage(1);
+
+  // 视频时长：元数据加载后显示在右下角
+  function formatTime(t) {
+    t = Math.floor(t || 0);
+    const m = Math.floor(t / 60);
+    const s = t % 60;
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  // 视频弹框：点击视频缩略图弹框播放，同一时间只有一个视频播放
+  const videoModal = document.getElementById('video-modal');
+  const videoModalTitle = document.getElementById('video-modal-title');
+  const videoModalPlayer = document.getElementById('video-modal-player');
+  const videoModalClose = document.getElementById('video-modal-close');
+  const videoModalBackdrop = document.getElementById('video-modal-backdrop');
+
+  function openVideoModal(src, title) {
+    videoModalPlayer.setAttribute('preload', 'auto');
+    videoModalPlayer.src = src;
+    videoModalTitle.textContent = title;
+    videoModal.classList.add('show');
+    videoModal.setAttribute('aria-hidden', 'false');
+    videoModalPlayer.play().catch(function () {});
+  }
+
+  function closeVideoModal() {
+    videoModal.classList.remove('show');
+    videoModal.setAttribute('aria-hidden', 'true');
+    videoModalPlayer.pause();
+    videoModalPlayer.removeAttribute('src');
+    videoModalPlayer.load();
+  }
+
+  if (videoModalClose) videoModalClose.addEventListener('click', closeVideoModal);
+  if (videoModalBackdrop) videoModalBackdrop.addEventListener('click', closeVideoModal);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && videoModal.classList.contains('show')) closeVideoModal();
+  });
+
+  // 移动端全屏横屏：竖屏设备全屏播放时，优先锁定屏幕方向为横屏，不支持则旋转视频 90°
+  function syncVideoFullscreen() {
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+    const isMobile = window.matchMedia('(pointer: coarse)').matches;
+    const isPortrait = window.innerHeight > window.innerWidth;
+    if (fsEl === videoModalPlayer && isMobile && isPortrait) {
+      videoModalPlayer.classList.add('force-landscape');
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').then(function () {
+          videoModalPlayer.classList.remove('force-landscape');
+        }).catch(function () {});
+      }
+    } else {
+      videoModalPlayer.classList.remove('force-landscape');
+      if (fsEl !== videoModalPlayer && screen.orientation && screen.orientation.unlock) {
+        try { screen.orientation.unlock(); } catch (err) {}
+      }
+    }
+  }
+  document.addEventListener('fullscreenchange', syncVideoFullscreen);
+  document.addEventListener('webkitfullscreenchange', syncVideoFullscreen);
+  window.addEventListener('resize', syncVideoFullscreen);
+
+  // 左侧菜单点击：切换页面 + AGENTS / TOOLS 折叠/展开
+  document.querySelectorAll('#toc a').forEach(a => {
+    a.addEventListener('click', function (e) {
+      const id = a.getAttribute('href').slice(1);
+      if (a.id === 'agents-toggle') {
+        const submenu = document.getElementById('agents-submenu');
+        const collapsed = submenu.classList.toggle('collapsed');
+        a.classList.toggle('open', !collapsed);
+      }
+      if (a.id === 'agentwork-toggle') {
+        const submenu = document.getElementById('agentwork-submenu');
+        const collapsed = submenu.classList.toggle('collapsed');
+        a.classList.toggle('open', !collapsed);
+      }
+      if (a.id === 'extensions-toggle') {
+        const submenu = document.getElementById('extensions-submenu');
+        const collapsed = submenu.classList.toggle('collapsed');
+        a.classList.toggle('open', !collapsed);
+      }
+      if (a.id === 'tools-toggle') {
+        const submenu = document.getElementById('tools-submenu');
+        const collapsed = submenu.classList.toggle('collapsed');
+        a.classList.toggle('open', !collapsed);
+      }
+      if (a.id === 'resources-toggle') {
+        const submenu = document.getElementById('resources-submenu');
+        const collapsed = submenu.classList.toggle('collapsed');
+        a.classList.toggle('open', !collapsed);
+      }
+      if (hasChapter(id)) {
+        e.preventDefault();
+        showPage(id);
+      }
+    });
+  });
+
+  // 上一篇/下一篇 链接点击
+  document.querySelectorAll('.chapter-nav a').forEach(a => {
+    a.addEventListener('click', function (e) {
+      const id = a.getAttribute('href').slice(1);
+      if (hasChapter(id)) {
+        e.preventDefault();
+        showPage(id);
+      }
+    });
+  });
+
+  // 初始化：优先读取 URL hash，否则默认显示简介
+  const initial = hasChapter(location.hash.slice(1)) ? location.hash.slice(1) : 'intro';
+  showPage(initial);
+
+  // 移动端菜单抽屉
+  const menuToggle = document.getElementById('menu-toggle');
+  const overlay = document.getElementById('overlay');
+  const sidebarEl = document.querySelector('.sidebar');
+  function closeMenu() {
+    sidebarEl.classList.remove('open');
+    overlay.classList.remove('show');
+  }
+  menuToggle.addEventListener('click', function () {
+    sidebarEl.classList.add('open');
+    overlay.classList.add('show');
+  });
+  overlay.addEventListener('click', closeMenu);
+  document.querySelectorAll('#toc a').forEach(a => {
+    a.addEventListener('click', closeMenu);
+  });
+
+  // 文档搜索
+  function escapeHtml(str) {
+    return str.replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+  const searchIndex = chapters.map(c => {
+    const sec = document.getElementById(c.id);
+    return { id: c.id, title: c.title, text: sec ? sec.textContent.replace(/\s+/g, ' ').trim() : '' };
+  });
+
+  searchInput.addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+    searchResults.innerHTML = '';
+    if (!q) { searchResults.classList.remove('show'); return; }
+    const matches = searchIndex.filter(it => it.title.toLowerCase().indexOf(q) >= 0 || it.text.toLowerCase().indexOf(q) >= 0).slice(0, 10);
+    if (matches.length === 0) {
+      searchResults.innerHTML = '<div class="search-empty">无匹配结果</div>';
+    } else {
+      matches.forEach(it => {
+        const item = document.createElement('div');
+        item.className = 'sr-item';
+        let html = '<span class="sr-title">' + escapeHtml(it.title) + '</span>';
+        const idx = it.text.toLowerCase().indexOf(q);
+        if (idx >= 0) {
+          const start = Math.max(0, idx - 15);
+          const snippet = it.text.slice(start, idx + q.length + 30);
+          html += '<span class="sr-snippet">' + (start > 0 ? '…' : '') + escapeHtml(snippet) + '…</span>';
+        }
+        item.innerHTML = html;
+        item.addEventListener('click', function () {
+          showPage(it.id);
+          searchResults.classList.remove('show');
+          searchInput.value = '';
+        });
+        searchResults.appendChild(item);
+      });
+    }
+    searchResults.classList.add('show');
+  });
+
+  searchInput.addEventListener('keydown', function (e) {
+    // 忽略输入法组合中（中文候选词确认）的 Enter，避免误触发搜索
+    if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+    const q = this.value.trim().toLowerCase();
+    if (!q) return;
+    const currentId = document.querySelector('section.page-active').id;
+    const matches = searchIndex.filter(it => it.title.toLowerCase().indexOf(q) >= 0 || it.text.toLowerCase().indexOf(q) >= 0);
+    // 优先跳到非当前页的第一个匹配，避免跳转无感知
+    const target = matches.find(it => it.id !== currentId) || matches[0];
+    if (target) {
+      showPage(target.id);
+      searchResults.classList.remove('show');
+      this.value = '';
+      this.blur();
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.search-box')) {
+      searchResults.classList.remove('show');
+    }
+  });
+
+</script>
+</body>
+</html>
