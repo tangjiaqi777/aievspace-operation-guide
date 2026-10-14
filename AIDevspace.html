@@ -589,6 +589,67 @@
     .video-grid { grid-template-columns: 1fr; gap: 14px; }
     .video-card .video-title { font-size: 14px; }
   }
+
+  /* ===== Top Navigation Bar ===== */
+  .topnav {
+    position: sticky;
+    top: 50px;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 42px;
+    padding: 0 24px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    white-space: nowrap;
+  }
+  .topnav::-webkit-scrollbar { height: 4px; }
+  .topnav::-webkit-scrollbar-track { background: transparent; }
+  .topnav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .topnav a {
+    display: inline-flex;
+    align-items: center;
+    height: 42px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    flex-shrink: 0;
+  }
+  .topnav a:hover {
+    color: var(--link);
+    background: var(--bg-soft);
+    text-decoration: none;
+  }
+  .topnav a.active {
+    color: var(--link);
+    border-bottom-color: var(--link);
+    font-weight: 600;
+  }
+  .topnav .nav-separator {
+    width: 1px;
+    height: 16px;
+    background: var(--border);
+    margin: 0 4px;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 900px) {
+    .topnav { top: 50px; padding: 0 12px; }
+    .topnav a { padding: 0 10px; font-size: 12.5px; }
+  }
+  @media (max-width: 768px) {
+    .topnav { display: none; }
+  }
+
 </style>
 </head>
 <body>
@@ -602,6 +663,22 @@
     <div class="search-results" id="search-results"></div>
   </div>
 </header>
+
+<nav class="topnav" id="topnav">
+  <a href="#intro">简介</a>
+  <a href="#home">首页</a>
+  <a href="#ai-shell">AI SHELL</a>
+  <a href="#agents">AGENTS</a>
+  <a href="#workenv">环境管理</a>
+  <a href="#agent-work">AGENT WORK</a>
+  <a href="#extensions">EXTENSIONS</a>
+  <a href="#tools">TOOLS</a>
+  <a href="#resources">RESOURCES</a>
+  <a href="#files">文件管理</a>
+  <a href="#settings">设置与反馈</a>
+  <a href="#system-monitoring">系统监控</a>
+  <a href="#video-tutorials">视频指导</a>
+</nav>
 
 <div class="overlay" id="overlay"></div>
 
@@ -1806,6 +1883,33 @@
       searchResults.classList.remove('show');
     }
   });
+
+
+  // ===== Top Navigation Bar: active link highlighting =====
+  (function() {
+    var navLinks = document.querySelectorAll('.topnav a');
+    var sections = [];
+    navLinks.forEach(function(link) {
+      var id = link.getAttribute('href').slice(1);
+      var sec = document.getElementById(id);
+      if (sec) sections.push({ id: id, el: sec, link: link });
+    });
+
+    function updateActive() {
+      var scrollPos = window.scrollY + 120;
+      var current = sections[0];
+      for (var i = 0; i < sections.length; i++) {
+        if (sections[i].el.offsetTop <= scrollPos) {
+          current = sections[i];
+        }
+      }
+      navLinks.forEach(function(l) { l.classList.remove('active'); });
+      if (current) current.link.classList.add('active');
+    }
+
+    window.addEventListener('scroll', updateActive, { passive: true });
+    updateActive();
+  })();
 
 </script>
 </body>
